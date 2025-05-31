@@ -1,0 +1,442 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Sign Language Translator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            margin-top: 50px;
+            padding: 40px;
+        }
+        
+        .language-selector {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .language-option {
+            cursor: pointer;
+            padding: 15px 25px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .language-option:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+        
+        .language-option.active {
+            background: #007bff;
+            color: white;
+            border-color: #0056b3;
+        }
+        
+        .text-input {
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+            padding: 20px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .text-input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        .translate-btn {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            border: none;
+            border-radius: 15px;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .translate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 123, 255, 0.3);
+        }
+        
+        .result-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .loading-spinner {
+            display: none;
+        }
+        
+        .video-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .gloss-display {
+            background: #fff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="main-container">
+                    <div class="text-center mb-4">
+                        <h1 class="display-4 fw-bold text-primary">
+                            <i class="fas fa-hands"></i> Sign Language Translator
+                        </h1>
+                        <p class="lead text-muted">Convert text to American Sign Language (ASL) or Indian Sign Language (ISL)</p>
+                    </div>
+                    
+                    <!-- Language Selector -->
+                    <div class="language-selector">
+                        <h5 class="mb-3"><i class="fas fa-language"></i> Select Sign Language</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="language-option active" data-language="isl">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            <i class="fas fa-flag fa-2x text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1">Indian Sign Language (ISL)</h6>
+                                            <small class="text-muted">Used in India and Pakistan</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="language-option" data-language="asl">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            <i class="fas fa-flag-usa fa-2x text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1">American Sign Language (ASL)</h6>
+                                            <small class="text-muted">Used in USA and Canada</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Text Input -->
+                    <div class="mb-4">
+                        <label for="textInput" class="form-label h5">
+                            <i class="fas fa-keyboard"></i> Enter Text to Translate
+                        </label>
+                        <textarea 
+                            class="form-control text-input" 
+                            id="textInput" 
+                            rows="4" 
+                            placeholder="Type your message here... (e.g., 'Hello, how are you?')"
+                            maxlength="500"
+                        ></textarea>
+                        <div class="text-end mt-2">
+                            <small class="text-muted">
+                                <span id="charCount">0</span>/500 characters
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <!-- Translate Button -->
+                    <div class="text-center mb-4">
+                        <button class="btn btn-primary btn-lg translate-btn" id="translateBtn">
+                            <i class="fas fa-magic"></i> Translate to Sign Language
+                        </button>
+                    </div>
+                    
+                    <!-- Loading Spinner -->
+                    <div class="text-center loading-spinner" id="loadingSpinner">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Processing...</span>
+                        </div>
+                        <p class="mt-2">Translating your text...</p>
+                    </div>
+                    
+                    <!-- Results -->
+                    <div class="result-container" id="resultContainer">
+                        <h5 class="mb-3">
+                            <i class="fas fa-video"></i> Translation Result
+                        </h5>
+                        
+                        <div class="video-container" id="videoContainer">
+                            <!-- Video will be inserted here -->
+                        </div>
+                        
+                        <div class="gloss-display" id="glossDisplay">
+                            <h6><i class="fas fa-list"></i> Sign Gloss:</h6>
+                            <p id="glossText" class="mb-0"></p>
+                        </div>
+                        
+                        <div class="stats">
+                            <div class="stat-item">
+                                <div class="stat-number" id="processingTime">0.0</div>
+                                <div class="stat-label">Processing Time (s)</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="wordCount">0</div>
+                                <div class="stat-label">Words Processed</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="signCount">0</div>
+                                <div class="stat-label">Signs Generated</div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button class="btn btn-outline-primary" id="downloadBtn">
+                                <i class="fas fa-download"></i> Download Video
+                            </button>
+                            <button class="btn btn-outline-secondary ms-2" id="shareBtn">
+                                <i class="fas fa-share"></i> Share Result
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        class SignLanguageTranslator {
+            constructor() {
+                this.selectedLanguage = 'isl';
+                this.initializeEventListeners();
+            }
+            
+            initializeEventListeners() {
+                // Language selection
+                document.querySelectorAll('.language-option').forEach(option => {
+                    option.addEventListener('click', (e) => {
+                        this.selectLanguage(e.currentTarget);
+                    });
+                });
+                
+                // Text input character count
+                document.getElementById('textInput').addEventListener('input', (e) => {
+                    this.updateCharCount(e.target.value.length);
+                });
+                
+                // Translate button
+                document.getElementById('translateBtn').addEventListener('click', () => {
+                    this.translateText();
+                });
+                
+                // Enter key in textarea
+                document.getElementById('textInput').addEventListener('keydown', (e) => {
+                    if (e.ctrlKey && e.key === 'Enter') {
+                        this.translateText();
+                    }
+                });
+            }
+            
+            selectLanguage(selectedOption) {
+                // Remove active class from all options
+                document.querySelectorAll('.language-option').forEach(option => {
+                    option.classList.remove('active');
+                });
+                
+                // Add active class to selected option
+                selectedOption.classList.add('active');
+                this.selectedLanguage = selectedOption.dataset.language;
+            }
+            
+            updateCharCount(count) {
+                document.getElementById('charCount').textContent = count;
+                
+                // Change color based on character count
+                const charCountElement = document.getElementById('charCount');
+                if (count > 450) {
+                    charCountElement.className = 'text-danger';
+                } else if (count > 350) {
+                    charCountElement.className = 'text-warning';
+                } else {
+                    charCountElement.className = 'text-muted';
+                }
+            }
+            
+            async translateText() {
+                const textInput = document.getElementById('textInput');
+                const text = textInput.value.trim();
+                
+                if (!text) {
+                    this.showAlert('Please enter some text to translate.', 'warning');
+                    return;
+                }
+                
+                // Show loading state
+                this.showLoading(true);
+                this.hideResults();
+                
+                try {
+                    const response = await fetch('/translate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            text: text,
+                            language: this.selectedLanguage
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.displayResults(result, text);
+                    } else {
+                        this.showAlert(`Translation failed: ${result.error}`, 'danger');
+                    }
+                } catch (error) {
+                    this.showAlert(`Network error: ${error.message}`, 'danger');
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+            
+            displayResults(result, originalText) {
+                // Update gloss text
+                document.getElementById('glossText').textContent = result.asl_gloss || result.isl_gloss || 'No gloss available';
+                
+                // Update statistics
+                const words = originalText.split(/\s+/).length;
+                const signs = (result.asl_gloss || result.isl_gloss || '').split(/\s+/).length;
+                
+                document.getElementById('processingTime').textContent = (result.processing_time || 0).toFixed(2);
+                document.getElementById('wordCount').textContent = words;
+                document.getElementById('signCount').textContent = signs;
+                
+                // Handle video display
+                this.displayVideo(result.video_path);
+                
+                // Show results
+                this.showResults();
+            }
+            
+            displayVideo(videoPath) {
+                const videoContainer = document.getElementById('videoContainer');
+                
+                if (videoPath) {
+                    videoContainer.innerHTML = `
+                        <video controls class="img-fluid" style="max-width: 100%; height: auto;">
+                            <source src="/video/${videoPath}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    `;
+                } else {
+                    videoContainer.innerHTML = `
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            Video generation in progress. This is a demo version.
+                        </div>
+                    `;
+                }
+            }
+            
+            showLoading(show) {
+                const loadingSpinner = document.getElementById('loadingSpinner');
+                const translateBtn = document.getElementById('translateBtn');
+                
+                if (show) {
+                    loadingSpinner.style.display = 'block';
+                    translateBtn.disabled = true;
+                    translateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Translating...';
+                } else {
+                    loadingSpinner.style.display = 'none';
+                    translateBtn.disabled = false;
+                    translateBtn.innerHTML = '<i class="fas fa-magic"></i> Translate to Sign Language';
+                }
+            }
+            
+            showResults() {
+                document.getElementById('resultContainer').style.display = 'block';
+                document.getElementById('resultContainer').scrollIntoView({ behavior: 'smooth' });
+            }
+            
+            hideResults() {
+                document.getElementById('resultContainer').style.display = 'none';
+            }
+            
+            showAlert(message, type) {
+                // Create and show bootstrap alert
+                const alertHtml = `
+                    <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+                
+                // Insert alert at the top of the container
+                const container = document.querySelector('.main-container');
+                container.insertAdjacentHTML('afterbegin', alertHtml);
+                
+                // Auto-remove after 5 seconds
+                setTimeout(() => {
+                    const alert = container.querySelector('.alert');
+                    if (alert) {
+                        alert.remove();
+                    }
+                }, 5000);
+            }
+        }
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            new SignLanguageTranslator();
+        });
+    </script>
+</body>
+</html>
